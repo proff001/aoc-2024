@@ -9,12 +9,41 @@ import (
 	"strings"
 )
 
+func getAbsDiff(val1 int, val2 int) int {
+	return int(math.Abs(float64(val1 - val2)));
+}
+
+func checkValues(levels []int) bool {
+	ascending := (levels[0] < levels[len(levels) - 1]);
+
+	for i := 0; i < len(levels) - 1; i++ {
+		val1, val2 := levels[i], levels[i + 1]
+		diff := getAbsDiff(val1, val2);
+
+		if (diff == 0 || diff > 3) {
+			return false;
+		}
+
+		if (ascending && val1 > val2) {
+			return false
+		}
+
+		if (!ascending && val1 < val2) {
+			return false;
+		}
+
+	}
+
+	return true;
+}
+
 func main() {
 	file, _ := os.Open("src/day2/input.txt")
 	defer file.Close();
 
 	r := bufio.NewReader(file);
-	safe := 0;
+	resultA := 0;
+	resultB := 0;
 
 	for {
 		line, _, err := r.ReadLine();
@@ -23,40 +52,30 @@ func main() {
 			break;
 		}
 
-		levels := strings.Split(string(line), " ");
-		
-		directionSet := false;
-		ascending := false;
+		strLevels := strings.Split(string(line), " ");
+		levels := make([]int, len(strLevels));
 
-		for i := 0; i < len(levels) - 1; i++ {
-			lvl1, _ := strconv.Atoi(levels[i]);
-			lvl2, _ := strconv.Atoi(levels[i + 1]);
-			diff := int(math.Abs(float64(lvl1 - lvl2)));
-			
-			if (!directionSet) {
-				if (lvl1 > lvl2) {
-					ascending = false;
-				} else {
-					ascending = true;
-				}
-				
-				directionSet = true;
-			}
+		for i, s := range strLevels {
+			levels[i], _ = strconv.Atoi(s);
+		}
 
-			if (diff > 0 && diff < 4) {
-				if ((!ascending && lvl1 > lvl2) || ascending && lvl1 < lvl2) {
-					if (i == len(levels) - 2) {
-						safe++;
-					}
-				} else {
+		if (checkValues(levels)) {
+			resultA++;
+			resultB++;
+		} else {
+			for i := 0; i < len(levels); i++ {
+				dampenedLevels := make([]int, 0, len(levels) - 1);
+				dampenedLevels = append(dampenedLevels, levels[:i]...);
+				dampenedLevels = append(dampenedLevels, levels[i + 1:]...);
+
+				if (checkValues(dampenedLevels)) {
+					resultB++;
 					break;
 				}
-			} else {
-				break;
 			}
 		}
 	}
 
-	fmt.Printf("Result A: %d\n", safe);
-	// fmt.Printf("Result B: %d\n", resultB);
+	fmt.Printf("Result A: %d\n", resultA);
+	fmt.Printf("Result B: %d\n", resultB);
 }
