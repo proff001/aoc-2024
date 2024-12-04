@@ -21,7 +21,6 @@ func main() {
 	resultB := 0;
 
 	do := true;
-	_ = do;
 
 	for {
 		lineBytes, _, err := r.ReadLine();
