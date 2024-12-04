@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	file, _ := os.Open("src/day4/test.txt");
+	file, _ := os.Open("src/day4/input.txt");
 	defer file.Close();
 
 	r := bufio.NewReader(file);
@@ -17,12 +17,16 @@ func main() {
 	lines := make([][]byte, 0);
 
 	for {
-		line, _, err := r.ReadLine();
+		rLine, _, err := r.ReadLine();
 
 		if (err != nil) {
 			break;
 		}
 
+		line := make([]byte, len(rLine));
+
+		copy(line, rLine);	
+		
 		lines = append(lines, line);
 	}
 
@@ -30,36 +34,62 @@ func main() {
 		line := lines[i];
 
 		for j := 0; j < len(line); j++ {
-			fmt.Printf("Line: %q", string(lines[i]));
 			if (line[j] == 'X') {
-				fmt.Printf("Found X: %d On line: %d\n", j, i)
-				fmt.Printf("Char: %q, Is X: %t\n", line[j], line[j] == 'X')
-				
-				if (j > 3) {
-					fmt.Printf("Found XMAS Backwards: %d\n", j)
+				if (j > 2) {
 					if (line[j - 1] == 'M' && line[j - 2] == 'A' && line[j - 3] == 'S') {
 						resultA++;
 					}
 				}
-				
+
 				if (j < len(line) - 3) {
-					fmt.Printf("Found XMAS Forwards: %d\n", j)
 					if (line[j + 1] == 'M' && line[j + 2] == 'A' && line[j + 3] == 'S') {
 						resultA++;
 					}
 				}
-				
-				if (i > 3) {
-					fmt.Printf("Found XMAS Upwards: %d\n", j)
+
+				if (i > 2) {
 					if (lines[i - 1][j] == 'M' && lines[i - 2][j] == 'A' && lines[i - 3][j] == 'S') {
 						resultA++;
 					}
 				}
-				
-				if (i < len(line) - 3) {
-					fmt.Printf("Found XMAS Downwards: %d\n", j)
-					if (lines[i + 1][j] == 'M' && lines[i + 2][j] == 'A' && lines[i - 3][j] == 'S') {
+
+				if (i < len(lines) - 3) {
+					if (lines[i + 1][j] == 'M' && lines[i + 2][j] == 'A' && lines[i + 3][j] == 'S') {
 						resultA++;
+					}
+				}
+
+				if (j > 2 && i > 2) {
+					if (lines[i - 1][j - 1] == 'M' && lines[i - 2][j - 2] == 'A' && lines[i - 3][j - 3] == 'S') {
+						resultA++;
+					}
+				}
+
+				if (j < len(line) - 3 && i > 2) {
+					if (lines[i - 1][j + 1] == 'M' && lines[i - 2][j + 2] == 'A' && lines[i - 3][j + 3] == 'S') {
+						resultA++;
+					}
+				}
+
+				if (j > 2 && i < len(lines) - 3) {
+					if (lines[i + 1][j - 1] == 'M' && lines[i + 2][j - 2] == 'A' && lines[i + 3][j - 3] == 'S') {
+						resultA++;
+					}
+				}
+
+				if (j < len(line) - 3 && i < len(lines) - 3) {
+					if (lines[i + 1][j + 1] == 'M' && lines[i + 2][j + 2] == 'A' && lines[i + 3][j + 3] == 'S') {	
+						resultA++;
+					}
+				}
+			}
+
+			if (line[j] == 'A' && i > 0 && i < len(lines) - 1 && j > 0 && j < len(line) - 1) {
+				topR, topL, botR, botL := lines[i - 1][j - 1], lines[i - 1][j + 1], lines[i + 1][j - 1], lines[i + 1][j + 1];
+
+				if ((topR == 'M' && botL == 'S') || (topR == 'S' && botL == 'M')) {
+					if ((topL == 'M' && botR == 'S') || (topL == 'S' && botR == 'M')) {
+						resultB++;
 					}
 				}
 			}
