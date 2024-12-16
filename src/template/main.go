@@ -7,21 +7,21 @@ import (
 )
 
 func main() {
-	file, _ := os.Open("src/day3/input.txt");
-	defer file.Close();
+	file, _ := os.Open("src/day3/input.txt")
+	defer file.Close()
 
-	r := bufio.NewReader(file);
-	resultA := 0;
-	resultB := 0;
+	r := bufio.NewReader(file)
+	resultA := 0
+	resultB := 0
 
 	for {
-		lineBytes, _, err := r.ReadLine();
+		lineBytes, _, err := r.ReadLine()
 
-		if (err != nil) {
-			break;
-		}		
+		if err != nil {
+			break
+		}
 	}
 
-	fmt.Printf("Result A: %d\n", resultA);
-	fmt.Printf("Result B: %d\n", resultB);
+	fmt.Printf("Result A: %d\n", resultA)
+	fmt.Printf("Result B: %d\n", resultB)
 }
