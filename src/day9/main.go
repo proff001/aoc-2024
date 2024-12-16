@@ -5,43 +5,48 @@ import (
 	"io"
 	"os"
 	"sort"
-	"strconv"
 )
 
 type Block struct {
 	fileId   int
 	position int
-	size     int
 }
 
-func createBlock(id, pos int, size int) *Block {
-	block := Block{fileId: id, position: pos, size: size}
+func createBlock(id, pos int) *Block {
+	block := Block{fileId: id, position: pos}
 
 	return &block
 }
 
-func printBlocks(blocks []*Block) {
-	str := ""
+func getSizeOfBlock(blocks []*Block, index int, rightToLeft bool) int {
+	size := 0
+	fileId := blocks[index].fileId
 
-	for _, b := range blocks {
-		if b.fileId == -1 {
-			str += "."
+	for {
+		if (!rightToLeft && index+size > len(blocks)-1) || (rightToLeft && index-size < 0) {
+			break
+		}
+
+		if !rightToLeft && fileId == blocks[index+size].fileId {
+			size++
+		} else if rightToLeft && fileId == blocks[index-size].fileId {
+			size++
 		} else {
-			str += strconv.Itoa(b.fileId)
+			break
 		}
 	}
 
-	fmt.Print(str, "\n")
+	return size
 }
 
 func main() {
-	file, _ := os.Open("src/day9/test.txt")
+	file, _ := os.Open("src/day9/input.txt")
 	defer file.Close()
 
 	lineBytes, _ := io.ReadAll(file)
 
 	var resultA int64 = 0
-	resultB := 0
+	var resultB int64 = 0
 
 	blocks := make([]int, 0)
 	blocks2 := make([]*Block, 0)
@@ -53,7 +58,7 @@ func main() {
 		if i%2 == 0 {
 			for i := 0; i < num; i++ {
 				blocks = append(blocks, nextId)
-				blocks2 = append(blocks2, createBlock(nextId, len(blocks2), num))
+				blocks2 = append(blocks2, createBlock(nextId, len(blocks2)))
 			}
 
 			if num != 0 {
@@ -62,7 +67,7 @@ func main() {
 		} else {
 			for i := 0; i < num; i++ {
 				blocks = append(blocks, -1)
-				blocks2 = append(blocks2, createBlock(-1, len(blocks2), num))
+				blocks2 = append(blocks2, createBlock(-1, len(blocks2)))
 			}
 		}
 	}
@@ -93,29 +98,33 @@ func main() {
 		}
 	}
 
-	printBlocks(blocks2)
-
-	for i := 0; i < len(blocks2)-1; i++ {
+	for i := len(blocks2) - 1; i > 0; i-- {
 		shouldBreak := false
 
-		if blocks2[i].fileId == -1 {
-			for j := len(blocks2) - 1; j > 0; j-- {
+		if blocks2[i].fileId != -1 {
+			sizeBlockA := getSizeOfBlock(blocks2, i, true)
+
+			for j := 0; j < i-sizeBlockA; j++ {
 				if j == i {
 					shouldBreak = true
 					break
 				}
 
-				if blocks2[j].fileId == -1 || blocks2[i].size < blocks2[j].size {
+				if blocks2[j].fileId != -1 {
 					continue
 				}
 
-				fmt.Printf("A: %v, B: %v\n", blocks2[i], blocks2[j])
+				sizeBlockB := getSizeOfBlock(blocks2, j, false)
 
-				amount := blocks2[j].size
-				for k := 0; k < amount; k++ {
-					temp := blocks2[i+k].position
-					blocks2[i+k].position = blocks2[j-k].position
-					blocks2[j-k].position = temp
+				if sizeBlockA > sizeBlockB {
+					j += sizeBlockB - 1
+					continue
+				}
+
+				for k := 0; k < sizeBlockA; k++ {
+					temp := blocks2[i-k].position
+					blocks2[i-k].position = blocks2[j+k].position
+					blocks2[j+k].position = temp
 				}
 
 				sort.Slice(blocks2, func(i2, j2 int) bool {
@@ -124,39 +133,14 @@ func main() {
 
 				break
 			}
+
+			i -= sizeBlockA - 1
 		}
-
-		// if block.fileId == -1 {
-		// 	for i := len(blocks) - 1; i > 0; i-- {
-		// 		if i == bi {
-		// 			shouldBreak = true
-		// 			break
-		// 		}
-
-		// 		block2 := blocks[i]
-
-		// 		if block2.fileId == -1 {
-		// 			continue
-		// 		}
-
-		// 		newPos := block.position
-		// 		block.position = block2.position
-		// 		block2.position = newPos
-
-		// 		sort.Slice(blocks, func(i, j int) bool {
-		// 			return blocks[i].position < blocks[j].position
-		// 		})
-
-		// break
-		// }
-		// }
 
 		if shouldBreak {
 			break
 		}
 	}
-
-	printBlocks(blocks2)
 
 	for i, b := range blocks {
 		if b == -1 {
@@ -164,6 +148,14 @@ func main() {
 		}
 
 		resultA += int64(i) * int64(b)
+	}
+
+	for i, b := range blocks2 {
+		if b.fileId == -1 {
+			continue
+		}
+
+		resultB += int64(i) * int64(b.fileId)
 	}
 
 	fmt.Printf("Result A: %d\n", resultA)
