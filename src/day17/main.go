@@ -3,24 +3,18 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func bitwiseXOR(regA, regB int) {
-	a := strconv.FormatInt(int64(regA), 2)
-	b := strconv.FormatInt(int64(regB), 2)
-	out := ""
-
-}
-
 func main() {
-	file, _ := os.Open("src/day17/test.txt")
+	file, _ := os.Open("src/day17/input.txt")
 	defer file.Close()
 
 	r := bufio.NewReader(file)
-	resultA := 0
+	resultA := ""
 	resultB := 0
 
 	registers := make([]int, 3)
@@ -49,28 +43,40 @@ func main() {
 		}
 	}
 
-	for i, op := range operations {
-		operand := 0
+	for ptr := 0; ptr < len(operations)-1; ptr += 2 {
+		operation := operations[ptr]
+		operand := operations[ptr+1]
+		combo := operand
 
-		if i != len(operations)-1 {
-			operand = operations[i+1]
+		switch operand {
+		case 4:
+			combo = registers[0]
+		case 5:
+			combo = registers[1]
+		case 6:
+			combo = registers[2]
 		}
 
-		switch op {
+		switch operation {
 		case 0:
-			denominator := 2 ^ operand
-			fmt.Printf("Op 1, denominator: %d, out: %v\n", denominator, registers[0]/denominator)
+			denominator := int(math.Pow(2, float64(operand)))
+			fmt.Printf("Op 0, denominator: %d, out: %v\n", denominator, registers[0]/denominator)
 			registers[0] = registers[0] / denominator
 		case 1:
-
+			fmt.Printf("Op 1, regb: %b, oprand: %b, out: %b\n", registers[1], operand, registers[1]^operand)
+			registers[1] = registers[1] ^ operand
 		case 2:
-
+			fmt.Printf("Op 2, operand: %d, out: %d\n", operand, operand%8)
+			registers[1] = operand % 8
 		case 3:
-
+			if registers[0] != 0 {
+				ptr = operand - 2
+			}
 		case 4:
-
+			fmt.Printf("Op 4, regb: %b, regc: %b, out: %b\n", registers[1], registers[2], registers[1]^registers[2])
+			registers[1] = registers[1] ^ registers[2]
 		case 5:
-
+			resultA += strconv.Itoa(combo % 8)
 		case 6:
 			denominator := 2 ^ operand
 			fmt.Printf("Op 6, denominator: %d, out: %v\n", denominator, registers[0]/denominator)
@@ -84,6 +90,6 @@ func main() {
 
 	fmt.Printf("Registers: %v\nOperations: %v\n", registers, operations)
 
-	fmt.Printf("Result A: %d\n", resultA)
+	fmt.Printf("Result A: %q\n", resultA)
 	fmt.Printf("Result B: %d\n", resultB)
 }
